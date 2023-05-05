@@ -1,0 +1,6 @@
+config MY_DRIVER
+tristate "my driver"
+depends on ARM
+default y if ARM
+help
+  my driver module.
