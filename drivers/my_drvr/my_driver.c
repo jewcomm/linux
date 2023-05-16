@@ -5,6 +5,7 @@
 #include <asm/syscall.h>      /* Needed for the __NR_compat_syscalls */
 #include <linux/types.h>      
 #include <linux/tee_drv.h>    /* Needed for connect with PTA */
+#include <asm/unistd32.h>
 
 #ifndef DEBUG_SYSCALL_SENDER
 #define DEBUG_SYSCALL_SENDER 1
@@ -51,6 +52,12 @@ static int __init hello_start(void)
     compat_syscal_ptr = (unsigned long *)kallsyms_lookup_name("compat_sys_call_table");
     printk(KERN_INFO "compat_sys_call_table ptr value: %p\n", compat_syscal_ptr);
 
+    /* analyzed later, see sys32.c and syscall.h */
+    // printk(KERN_INFO "compat_sys_call_table ptr value: %p\n", &compat_sys_call_table);
+    // for(int i = 0; i < __NR_compat_syscalls; i++){
+    //     printk(KERN_INFO "[my syscall parser] compat_sys_call_table[%i]: %lx\n", i, compat_sys_call_table[i]);
+    // }
+
     compat_syscall_phys = virt_to_phys(compat_syscal_ptr);
 
     printk(KERN_INFO "compat_sys_call_table phys value: %lx\n", compat_syscall_phys);
@@ -68,7 +75,7 @@ static int __init hello_start(void)
 
     memset(&sess_arg, 0, sizeof(sess_arg));
 	export_uuid(sess_arg.uuid, &optee_syscall_pta_uuid);
-    sess_arg.clnt_login = TEE_IOCTL_LOGIN_PUBLIC;
+    sess_arg.clnt_login = TEE_IOCTL_LOGIN_REE_KERNEL;
 	sess_arg.num_params = 0;
 
     rc = tee_client_open_session(ctx, &sess_arg, NULL);
